@@ -21,8 +21,8 @@ help:
 # DEVELOPMENT
 # ==================================================================================== #
 
-## run/api: Run the cmp/api application
-.PHONY: run/api
+## run: Run the cmp/api application
+.PHONY: run
 run/api:
 	go run ./cmd/api
 
