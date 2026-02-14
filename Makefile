@@ -23,7 +23,7 @@ help:
 
 ## run: Run the cmp/api application
 .PHONY: run
-run/api:
+run:
 	go run ./cmd/api
 
 # ==================================================================================== #
