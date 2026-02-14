@@ -1,3 +1,4 @@
+// CMPS3162 Lab 3 demonstrating writeJSON and readJSON.
 package main
 
 import (
