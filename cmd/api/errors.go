@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -28,4 +29,27 @@ func (app *application) serverErrorResponse(w http.ResponseWriter, r *http.Reque
 
 	message := "The server encountered a problem and could not process your request"
 	app.errorResponse(w, r, http.StatusInternalServerError, message)
+}
+
+// notFound Response sends a 404 HTTP status code.
+func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request) {
+	message := "the requested resource could not be found"
+	app.errorResponse(w, r, http.StatusNotFound, message)
+}
+
+// methodNotAllowedResponse sends a 405 HTTP status code.
+func (app *application) methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
+	message := fmt.Sprintf("the %s method is not supported for this resource", r.Method)
+	app.errorResponse(w, r, http.StatusMethodNotAllowed, message)
+}
+
+// badRequestResponse sends a 400 HTTP status code, typically for invalid JSON.
+func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+}
+
+// failedValidationResponse sends a 422 HTTP status code, typically for
+// validly structured JSON whose field values are not valid.
+func (app *application) failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+	app.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }

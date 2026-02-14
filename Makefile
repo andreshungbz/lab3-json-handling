@@ -63,3 +63,21 @@ build/api:
 	@echo '${ECHO_PREFIX} Building cmd/api...'
 	go build -ldflags='-s' -o=./bin/api ./cmd/api
 	GOOS=linux GOARCH=amd64 go build -ldflags='-s' -o=./bin/linux_amd64/api ./cmd/api
+
+# ==================================================================================== #
+# TESTS
+# ==================================================================================== #
+
+.PHONY: test/api
+test/api:
+	@echo '${ECHO_PREFIX} Testing curl requests to the API Server...'
+	curl -i http://localhost:4000/v1/rooms/2
+	@echo ''
+	curl -i http://localhost:4000/v1/rooms/1
+	@echo ''
+	curl -i -X POST http://localhost:4000/v1/rooms -d @test/01-control.json
+	@echo ''
+	curl -i -X POST http://localhost:4000/v1/rooms -d @test/02-type-error.json
+	@echo ''
+	curl -i -X POST http://localhost:4000/v1/rooms -d @test/03-invalid.json
+	

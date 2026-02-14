@@ -12,11 +12,19 @@ import (
 func (app *application) routes() http.Handler {
 	router := httprouter.New()
 
+	// Defined handlers for 404 and 205 status code
+	router.NotFound = http.HandlerFunc(app.notFoundResponse)
+	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
+
 	// Healthcheck route
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
+
+	// Room routes
+	router.HandlerFunc(http.MethodGet, "/v1/rooms/2", app.showRoomHandler)
+	router.HandlerFunc(http.MethodPost, "/v1/rooms", app.createRoomHandler)
 
 	// Metrics debugging route
 	router.Handler(http.MethodGet, "/debug/vars", expvar.Handler())
 
-	return router
+	return app.recoverPanic(router)
 }

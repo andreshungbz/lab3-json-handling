@@ -1,0 +1,7 @@
+{
+  "room_number": 267,
+  "room_type": "single-bed-room",
+  "max_occupancy": 4,
+  "has_balcony": "maybe",
+  "available": true
+}
