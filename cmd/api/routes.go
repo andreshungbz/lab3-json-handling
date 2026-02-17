@@ -20,7 +20,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 
 	// Room routes
-	router.HandlerFunc(http.MethodGet, "/v1/rooms/2", app.showRoomHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/rooms/:id", app.showRoomHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/rooms", app.createRoomHandler)
 
 	// Metrics debugging route

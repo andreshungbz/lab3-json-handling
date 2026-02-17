@@ -5,6 +5,8 @@
 # ENVIRONMENT & VARIABLES
 # ==================================================================================== #
 
+include .envrc
+
 ECHO_PREFIX = [make]
 
 # ==================================================================================== #
@@ -24,7 +26,40 @@ help:
 ## run: Run the cmp/api application
 .PHONY: run
 run:
-	go run ./cmd/api
+	go run ./cmd/api -db-dsn=${HOTEL_DB_DSN}
+
+# ==================================================================================== #
+# DATABASE MIGRATIONS
+# ==================================================================================== #
+
+## db/psql: Connect to the hotel database using psql as hotel_user
+.PHONY: db/psql
+db/psql:
+	psql ${HOTEL_DB_DSN}
+
+## db/migrations/new name=$1: Create a new database migration
+.PHONY: db/migrations/new
+db/migrations/new:
+	@echo 'Creating migration files for ${name}...'
+	migrate create -seq -ext=.sql -dir=./migrations ${name}
+
+## db/migrations/up: Apply all up database migrations
+.PHONY: db/migrations/up
+db/migrations/up:
+	@echo 'Running up migrations...'
+	migrate -path ./migrations -database ${HOTEL_DB_DSN} up
+
+## db/migrations/down: Apply all down database migrations
+.PHONY: db/migrations/down
+db/migrations/down:
+	@echo 'Reverting all migrations...'
+	migrate -path ./migrations -database ${HOTEL_DB_DSN} down
+
+## db/migrations/fix version=$1: Force the schema_migrations table version
+.PHONY: db/migrations/fix
+db/migrations/fix:
+	@echo 'Forcing schema migrations version to ${version}...'
+	migrate -path ./migrations -database ${HOTEL_DB_DSN} force ${version}
 
 # ==================================================================================== #
 # QUALITY CONTROL
@@ -71,8 +106,6 @@ build/api:
 .PHONY: test/api
 test/api:
 	@echo '${ECHO_PREFIX} Testing curl requests to the API Server...'
-	curl -i http://localhost:4000/v1/rooms/2
-	@echo ''
 	curl -i http://localhost:4000/v1/rooms/1
 	@echo ''
 	curl -i -X POST http://localhost:4000/v1/rooms -d @test/01-control.json

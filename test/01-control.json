@@ -1,6 +1,6 @@
 {
   "room_number": 167,
-  "room_type": "single-bed-room",
+  "room_type": "single",
   "max_occupancy": 4,
   "has_balcony": true,
   "available": true

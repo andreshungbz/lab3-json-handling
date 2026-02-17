@@ -1,30 +1,13 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/andreshungbz/lab3-json-handling/internal/data"
 	"github.com/andreshungbz/lab3-json-handling/internal/validator"
 )
-
-// showRoomHandler writes JSON of a single hotel room to the HTTP response.
-func (app *application) showRoomHandler(w http.ResponseWriter, r *http.Request) {
-	// simulate retrieving a hotel room from the database
-	room := &data.Room{
-		ID:           2,
-		RoomNumber:   267,
-		RoomType:     "double-bed-room",
-		MaxOccupancy: 4,
-		HasBalcony:   false,
-		Available:    true,
-	}
-
-	// use writeJSON for the HTTP response
-	err := app.writeJSON(w, http.StatusOK, envelope{"room": room}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
 
 // createRoomHandler reads JSON for a hotel room and writes it back to the client.
 func (app *application) createRoomHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +29,6 @@ func (app *application) createRoomHandler(w http.ResponseWriter, r *http.Request
 
 	// create a Room from the input values
 	room := &data.Room{
-		ID:           1,
 		RoomNumber:   input.RoomNumber,
 		RoomType:     input.RoomType,
 		MaxOccupancy: input.MaxOccupancy,
@@ -61,8 +43,47 @@ func (app *application) createRoomHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// insert room into database
+	err = app.models.Rooms.Insert(room)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	// apply an HTTP header showing where the new resource is located
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/rooms/%d", room.ID))
+
 	// use writeJSON for the HTTP response
 	err = app.writeJSON(w, http.StatusCreated, envelope{"room": room}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+// showRoomHandler writes JSON of a single hotel room to the HTTP response.
+func (app *application) showRoomHandler(w http.ResponseWriter, r *http.Request) {
+	// read and validate URL id parameter
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	// retrieve database record
+	room, err := app.models.Rooms.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	// use writeJSON for the HTTP response
+	err = app.writeJSON(w, http.StatusOK, envelope{"room": room}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
